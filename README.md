@@ -1,6 +1,6 @@
 # Ignis Engine: Interactive Math Playground
 
-[**🚀 Live Demo**](YOUR_GITHUB_PAGES_URL_HERE) | [**🎮 Ignis Engine Repo**](https://github.com/D1abol1cal/Ignis)
+[**🚀 Live Demo**](https://d1abol1cal.github.io/IgnisMath/) | [**🎮 Ignis Engine Repo**](https://github.com/D1abol1cal/Ignis)
 
 An interactive visualization of the math behind [Ignis](https://github.com/D1abol1cal/Ignis), a 3D game engine built in C.
 
