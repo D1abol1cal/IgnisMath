@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ignis Engine: 3D Math Interactive Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 3em;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .intro {
+            color: #cbd5e1;
+            max-width: 800px;
+            margin: 20px auto;
+            line-height: 1.6;
+        }
+
+        .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .nav-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(30, 41, 59, 0.8);
+            color: #fff;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .demo-section {
+            display: none;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .demo-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .demo-title {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #60a5fa;
+        }
+
+        .demo-description {
+            font-size: 1.1em;
+            color: #cbd5e1;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .demo-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .demo-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .canvas-container {
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            min-height: 600px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls-panel {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #a78bfa;
+            font-size: 1.1em;
+        }
+
+        .slider-container {
+            margin: 15px 0;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #cbd5e1;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(148, 163, 184, 0.3);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(100, 116, 139, 0.5);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .info-box h4 {
+            color: #60a5fa;
+            margin-bottom: 8px;
+        }
+
+        .info-box p, .info-box li {
+            color: #cbd5e1;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .vector-display {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+
+        .vector-display .vector-name {
+            color: #a78bfa;
+            font-weight: bold;
+        }
+
+        .vector-display .vector-values {
+            color: #60a5fa;
+            margin-top: 5px;
+        }
+
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        input[type="color"] {
+            width: 50px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .playback-controls {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .playback-controls button {
+            flex: 1;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 50px;
+            color: #94a3b8;
+        }
+
+        .code-snippet {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #86efac;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .help-text {
+            color: #94a3b8;
+            font-size: 0.85em;
+            font-style: italic;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Ignis Engine</h1>
+            <div class="subtitle">Interactive 3D Math Playground</div>
+            <p class="intro">
+                Building a game engine from scratch? Explore the fundamental math operations that power 3D graphics.
+                <strong>Drag to rotate</strong>, adjust parameters in real-time, and see the math come to life!
+            </p>
+        </header>
+
+        <nav class="nav-buttons">
+            <button class="nav-btn active" onclick="switchDemo('vectors')">📐 Vector Operations</button>
+            <button class="nav-btn" onclick="switchDemo('cross')">✖️ Cross Product</button>
+            <button class="nav-btn" onclick="switchDemo('transforms')">🔄 Transformations</button>
+            <button class="nav-btn" onclick="switchDemo('quaternions')">🌀 Quaternions</button>
+            <button class="nav-btn" onclick="switchDemo('projection')">📷 Projection</button>
+        </nav>
+
+        <!-- Vector Operations Demo -->
+        <div id="vectors" class="demo-section active">
+            <h2 class="demo-title">Vector Operations</h2>
+            <p class="demo-description">
+                Vectors represent position, direction, velocity, and forces. Create your own vectors and see operations in real-time!
+            </p>
+            
+            <div class="demo-layout">
+                <div class="canvas-container" id="vectors-canvas"></div>
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <span class="control-label">🟢 Vector A</span>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>X:</span>
+                                <span id="vecA-x-val">2.0</span>
+                            </div>
+                            <input type="range" id="vecA-x" min="-5" max="5" step="0.1" value="2">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Y:</span>
+                                <span id="vecA-y-val">1.0</span>
+                            </div>
+                            <input type="range" id="vecA-y" min="-5" max="5" step="0.1" value="1">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Z:</span>
+                                <span id="vecA-z-val">1.0</span>
+                            </div>
+                            <input type="range" id="vecA-z" min="-5" max="5" step="0.1" value="1">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <span class="control-label">🔴 Vector B</span>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>X:</span>
+                                <span id="vecB-x-val">1.0</span>
+                            </div>
+                            <input type="range" id="vecB-x" min="-5" max="5" step="0.1" value="1">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Y:</span>
+                                <span id="vecB-y-val">2.0</span>
+                            </div>
+                            <input type="range" id="vecB-y" min="-5" max="5" step="0.1" value="2">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Z:</span>
+                                <span id="vecB-z-val">-1.0</span>
+                            </div>
+                            <input type="range" id="vecB-z" min="-5" max="5" step="0.1" value="-1">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <span class="control-label">🟡 Operation</span>
+                        <button class="btn btn-primary" onclick="setVectorOp('add')">A + B (Add)</button>
+                        <button class="btn btn-secondary" onclick="setVectorOp('sub')">A - B (Subtract)</button>
+                        <button class="btn btn-secondary" onclick="setVectorOp('mul')">A × B (Multiply)</button>
+                        <button class="btn btn-secondary" onclick="setVectorOp('dot')">A · B (Dot Product)</button>
+                    </div>
+
+                    <div class="vector-display">
+                        <div class="vector-name">Result:</div>
+                        <div class="vector-values" id="vector-result">Calculating...</div>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>💡 Quick Facts</h4>
+                        <ul style="margin-left: 20px;">
+                            <li>Dot product measures alignment</li>
+                            <li>Length gives magnitude/speed</li>
+                            <li>Normalized vectors have length 1</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cross Product Demo -->
+        <div id="cross" class="demo-section">
+            <h2 class="demo-title">Cross Product: Perpendicular Vectors</h2>
+            <p class="demo-description">
+                The cross product finds a vector perpendicular to both input vectors. Essential for lighting, normals, and physics!
+            </p>
+            
+            <div class="demo-layout">
+                <div class="canvas-container" id="cross-canvas"></div>
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <span class="control-label">Adjust Vectors</span>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Angle:</span>
+                                <span id="cross-angle-val">45°</span>
+                            </div>
+                            <input type="range" id="cross-angle" min="0" max="180" step="1" value="45">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Vector A Length:</span>
+                                <span id="cross-lenA-val">2.0</span>
+                            </div>
+                            <input type="range" id="cross-lenA" min="0.5" max="4" step="0.1" value="2">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Vector B Length:</span>
+                                <span id="cross-lenB-val">2.0</span>
+                            </div>
+                            <input type="range" id="cross-lenB" min="0.5" max="4" step="0.1" value="2">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="show-plane" checked>
+                            <label for="show-plane">Show Plane (formed by A & B)</label>
+                        </div>
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="auto-rotate" checked>
+                            <label for="auto-rotate">Auto-rotate view</label>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>🎯 Real-World Uses</h4>
+                        <ul style="margin-left: 20px;">
+                            <li><strong>Surface Normals:</strong> Which way faces point</li>
+                            <li><strong>Lighting:</strong> How light bounces off surfaces</li>
+                            <li><strong>Torque:</strong> Rotational force in physics</li>
+                            <li><strong>Camera Systems:</strong> Building coordinate frames</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-snippet">
+vec3 normal = vec3_cross(edge1, edge2);
+vec3_normalize(&normal);
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transformations Demo -->
+        <div id="transforms" class="demo-section">
+            <h2 class="demo-title">Matrix Transformations</h2>
+            <p class="demo-description">
+                Every object in 3D space is positioned, rotated, and scaled using matrix transformations. Try it yourself!
+            </p>
+            
+            <div class="demo-layout">
+                <div class="canvas-container" id="transforms-canvas"></div>
+                <div class="controls-panel">
+                    <div class="playback-controls">
+                        <button class="btn btn-primary" onclick="toggleAnimation('transforms')">⏯️ Play/Pause</button>
+                        <button class="btn btn-secondary" onclick="resetTransform()">🔄 Reset</button>
+                    </div>
+
+                    <div class="control-group">
+                        <span class="control-label">🔄 Rotation (degrees)</span>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>X Axis:</span>
+                                <span id="rot-x-val">0°</span>
+                            </div>
+                            <input type="range" id="rot-x" min="0" max="360" step="1" value="0">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Y Axis:</span>
+                                <span id="rot-y-val">0°</span>
+                            </div>
+                            <input type="range" id="rot-y" min="0" max="360" step="1" value="0">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Z Axis:</span>
+                                <span id="rot-z-val">0°</span>
+                            </div>
+                            <input type="range" id="rot-z" min="0" max="360" step="1" value="0">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <span class="control-label">📏 Scale</span>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Size:</span>
+                                <span id="scale-val">1.0</span>
+                            </div>
+                            <input type="range" id="scale" min="0.1" max="3" step="0.1" value="1">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <span class="control-label">➡️ Translation</span>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>X Position:</span>
+                                <span id="trans-x-val">0.0</span>
+                            </div>
+                            <input type="range" id="trans-x" min="-3" max="3" step="0.1" value="0">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Y Position:</span>
+                                <span id="trans-y-val">0.0</span>
+                            </div>
+                            <input type="range" id="trans-y" min="-3" max="3" step="0.1" value="0">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Z Position:</span>
+                                <span id="trans-z-val">0.0</span>
+                            </div>
+                            <input type="range" id="trans-z" min="-3" max="3" step="0.1" value="0">
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>⚠️ Order Matters!</h4>
+                        <p>Matrix multiplication is not commutative: A × B ≠ B × A</p>
+                        <p style="margin-top: 8px;">Standard order: <strong>Scale → Rotate → Translate</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quaternions Demo -->
+        <div id="quaternions" class="demo-section">
+            <h2 class="demo-title">Quaternions: Smooth Rotations</h2>
+            <p class="demo-description">
+                Quaternions prevent gimbal lock and enable smooth interpolation. See the difference between SLERP and Euler angles!
+            </p>
+            
+            <div class="demo-layout">
+                <div class="canvas-container" id="quaternions-canvas"></div>
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <span class="control-label">Rotation Method</span>
+                        <button class="btn btn-primary" onclick="setQuatMode('slerp')">🌀 SLERP (Smooth)</button>
+                        <button class="btn btn-secondary" onclick="setQuatMode('euler')">⚠️ Euler Angles</button>
+                    </div>
+
+                    <div class="control-group">
+                        <span class="control-label">Animation Speed</span>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Speed:</span>
+                                <span id="quat-speed-val">1.0x</span>
+                            </div>
+                            <input type="range" id="quat-speed" min="0.1" max="3" step="0.1" value="1">
+                        </div>
+                    </div>
+
+                    <div class="playback-controls">
+                        <button class="btn btn-primary" onclick="toggleAnimation('quaternions')">⏯️ Play/Pause</button>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>✅ Why Quaternions?</h4>
+                        <ul style="margin-left: 20px;">
+                            <li><strong>No Gimbal Lock:</strong> All rotations work smoothly</li>
+                            <li><strong>SLERP:</strong> Smooth interpolation between rotations</li>
+                            <li><strong>Compact:</strong> Only 4 numbers (vs 9 for matrices)</li>
+                            <li><strong>Fast:</strong> Efficient to concatenate</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-snippet">
+quat start = quat_identity();
+quat end = quat_from_axis_angle(axis, angle, TRUE);
+quat result = quat_slerp(start, end, t);
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projection Demo -->
+        <div id="projection" class="demo-section">
+            <h2 class="demo-title">Projection: 3D to 2D</h2>
+            <p class="demo-description">
+                How do we display 3D scenes on a 2D screen? Projection matrices transform 3D coordinates into screen space!
+            </p>
+            
+            <div class="demo-layout">
+                <div class="canvas-container" id="projection-canvas"></div>
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <span class="control-label">Projection Type</span>
+                        <button class="btn btn-primary" onclick="setProjection('perspective')">📷 Perspective</button>
+                        <button class="btn btn-secondary" onclick="setProjection('orthographic')">📐 Orthographic</button>
+                    </div>
+
+                    <div class="control-group" id="perspective-controls">
+                        <span class="control-label">Perspective Settings</span>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>FOV (Field of View):</span>
+                                <span id="fov-val">75°</span>
+                            </div>
+                            <input type="range" id="fov" min="30" max="120" step="1" value="75">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Near Clip:</span>
+                                <span id="near-val">0.1</span>
+                            </div>
+                            <input type="range" id="near" min="0.1" max="5" step="0.1" value="0.1">
+                        </div>
+                    </div>
+
+                    <div class="control-group" id="ortho-controls" style="display: none;">
+                        <span class="control-label">Orthographic Settings</span>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Zoom:</span>
+                                <span id="ortho-zoom-val">4</span>
+                            </div>
+                            <input type="range" id="ortho-zoom" min="2" max="10" step="0.5" value="4">
+                        </div>
+                    </div>
+
+                    <div class="playback-controls">
+                        <button class="btn btn-primary" onclick="toggleAnimation('projection')">⏯️ Play/Pause</button>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>📷 Perspective vs 📐 Orthographic</h4>
+                        <p><strong>Perspective:</strong> Objects get smaller with distance. Used in FPS, racing games, realistic 3D.</p>
+                        <p style="margin-top: 8px;"><strong>Orthographic:</strong> No depth distortion. Used in 2D games, strategy games, CAD.</p>
+                    </div>
+
+                    <div class="code-snippet">
+// Perspective
+mat4 proj = mat4_perspective(fov, aspect, near, far);
+
+// Orthographic  
+mat4 proj = mat4_orthographic(l, r, b, t, n, f);
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p style="font-size: 1.2em; margin-bottom: 15px;">
+                💡 <strong>Why This Matters:</strong> These operations run thousands of times per frame. 
+                Understanding them is key to optimizing performance and creating stunning visuals.
+            </p>
+            <p>Built with ❤️ in C. Powered by mathematics. 🚀</p>
+            <p style="margin-top: 10px;">#GameDev #GraphicsProgramming #GameEngine #Ignis</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Global state
+        let scenes = {};
+        let cameras = {};
+        let renderers = {};
+        let controls = {};
+        let animations = {};
+        let currentDemo = 'vectors';
+
+        // Animation state
+        let animationStates = {
+            vectors: true,
+            cross: true,
+            transforms: true,
+            quaternions: true,
+            projection: true
+        };
+
+        // Switch between demos
+        function switchDemo(demoName) {
+            // Hide all demos
+            document.querySelectorAll('.demo-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected demo
+            document.getElementById(demoName).classList.add('active');
+            
+            // Add active class to button
+            event.target.classList.add('active');
+            
+            currentDemo = demoName;
+            
+            // Initialize demo if not already initialized
+            if (!scenes[demoName]) {
+                initDemo(demoName);
+            }
+        }
+
+        // Initialize a demo
+        function initDemo(demoName) {
+            switch(demoName) {
+                case 'vectors':
+                    initVectors();
+                    break;
+                case 'cross':
+                    initCrossProduct();
+                    break;
+                case 'transforms':
+                    initTransforms();
+                    break;
+                case 'quaternions':
+                    initQuaternions();
+                    break;
+                case 'projection':
+                    initProjection();
+                    break;
+            }
+        }
+
+        // Create basic scene setup
+        function createScene(containerSelector) {
+            const container = document.querySelector(containerSelector);
+            const width = container.clientWidth;
+            const height = 600;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+            
+            camera.position.set(5, 5, 5);
+            camera.lookAt(0, 0, 0);
+
+            // Add grid and axes
+            const gridHelper = new THREE.GridHelper(10, 10, 0x444444, 0x222222);
+            scene.add(gridHelper);
+            
+            const axesHelper = new THREE.AxesHelper(5);
+            scene.add(axesHelper);
+
+            // Simple orbit controls
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+            
+            renderer.domElement.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+            
+            renderer.domElement.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - previousMousePosition.x;
+                    const deltaY = e.clientY - previousMousePosition.y;
+                    
+                    const rotationSpeed = 0.005;
+                    
+                    // Rotate camera around the scene
+                    const radius = Math.sqrt(
+                        camera.position.x ** 2 + 
+                        camera.position.z ** 2
+                    );
+                    
+                    let angle = Math.atan2(camera.position.z, camera.position.x);
+                    angle -= deltaX * rotationSpeed;
+                    
+                    camera.position.x = radius * Math.cos(angle);
+                    camera.position.z = radius * Math.sin(angle);
+                    
+                    camera.position.y -= deltaY * rotationSpeed * 5;
+                    camera.position.y = Math.max(1, Math.min(10, camera.position.y));
+                    
+                    camera.lookAt(0, 0, 0);
+                    
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                }
+            });
+            
+            renderer.domElement.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+            
+            renderer.domElement.addEventListener('mouseleave', () => {
+                isDragging = false;
+            });
+
+            // Zoom with scroll
+            renderer.domElement.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const zoomSpeed = 0.1;
+                const delta = e.deltaY > 0 ? 1 + zoomSpeed : 1 - zoomSpeed;
+                
+                camera.position.multiplyScalar(delta);
+                camera.position.y = Math.max(1, Math.min(15, camera.position.y));
+            });
+
+            return { scene, camera, renderer };
+        }
+
+        // Vector Operations Demo
+        function initVectors() {
+            const { scene, camera, renderer } = createScene('#vectors-canvas');
+            scenes.vectors = scene;
+            cameras.vectors = camera;
+            renderers.vectors = renderer;
+
+            // Create vectors
+            const vectorA = new THREE.Vector3(2, 1, 1);
+            const vectorB = new THREE.Vector3(1, 2, -1);
+
+            const createArrow = (vector, color) => {
+                const dir = vector.clone().normalize();
+                const length = vector.length();
+                return new THREE.ArrowHelper(dir, new THREE.Vector3(0, 0, 0), length, color, 0.3, 0.2);
+            };
+
+            const arrowA = createArrow(vectorA, 0x00ff00);
+            const arrowB = createArrow(vectorB, 0xff0000);
+            const arrowResult = createArrow(vectorA.clone().add(vectorB), 0xffff00);
+
+            scene.add(arrowA);
+            scene.add(arrowB);
+            scene.add(arrowResult);
+
+            // Store references
+            scenes.vectors.arrowA = arrowA;
+            scenes.vectors.arrowB = arrowB;
+            scenes.vectors.arrowResult = arrowResult;
+            scenes.vectors.vectorA = vectorA;
+            scenes.vectors.vectorB = vectorB;
+            scenes.vectors.operation = 'add';
+
+            // Setup sliders
+            setupVectorSliders();
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                if (currentDemo === 'vectors' && animationStates.vectors) {
+                    renderer.render(scene, camera);
+                }
+            }
+            animate();
+        }
+
+        function setupVectorSliders() {
+            const sliders = ['x', 'y', 'z'];
+            
+            sliders.forEach(axis => {
+                // Vector A
+                const sliderA = document.getElementById(`vecA-${axis}`);
+                const valA = document.getElementById(`vecA-${axis}-val`);
+                
+                sliderA.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    valA.textContent = value.toFixed(1);
+                    updateVectors();
+                });
+                
+                // Vector B
+                const sliderB = document.getElementById(`vecB-${axis}`);
+                const valB = document.getElementById(`vecB-${axis}-val`);
+                
+                sliderB.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    valB.textContent = value.toFixed(1);
+                    updateVectors();
+                });
+            });
+        }
+
+        function updateVectors() {
+            if (!scenes.vectors) return;
+
+            const scene = scenes.vectors;
+            
+            // Get values
+            const ax = parseFloat(document.getElementById('vecA-x').value);
+            const ay = parseFloat(document.getElementById('vecA-y').value);
+            const az = parseFloat(document.getElementById('vecA-z').value);
+            
+            const bx = parseFloat(document.getElementById('vecB-x').value);
+            const by = parseFloat(document.getElementById('vecB-y').value);
+            const bz = parseFloat(document.getElementById('vecB-z').value);
+
+            const vectorA = new THREE.Vector3(ax, ay, az);
+            const vectorB = new THREE.Vector3(bx, by, bz);
+
+            // Update arrows
+            scene.remove(scene.arrowA);
+            scene.remove(scene.arrowB);
+            scene.remove(scene.arrowResult);
+
+            const createArrow = (vector, color) => {
+                if (vector.length() < 0.01) return null;
+                const dir = vector.clone().normalize();
+                const length = vector.length();
+                return new THREE.ArrowHelper(dir, new THREE.Vector3(0, 0, 0), length, color, 0.3, 0.2);
+            };
+
+            scene.arrowA = createArrow(vectorA, 0x00ff00);
+            scene.arrowB = createArrow(vectorB, 0xff0000);
+
+            // Calculate result based on operation
+            let result;
+            const op = scene.operation;
+            
+            switch(op) {
+                case 'add':
+                    result = vectorA.clone().add(vectorB);
+                    break;
+                case 'sub':
+                    result = vectorA.clone().sub(vectorB);
+                    break;
+                case 'mul':
+                    result = new THREE.Vector3(
+                        vectorA.x * vectorB.x,
+                        vectorA.y * vectorB.y,
+                        vectorA.z * vectorB.z
+                    );
+                    break;
+                case 'dot':
+                    const dot = vectorA.dot(vectorB);
+                    result = new THREE.Vector3(dot, 0, 0);
+                    break;
+            }
+
+            scene.arrowResult = createArrow(result, 0xffff00);
+
+            if (scene.arrowA) scene.add(scene.arrowA);
+            if (scene.arrowB) scene.add(scene.arrowB);
+            if (scene.arrowResult) scene.add(scene.arrowResult);
+
+            // Update display
+            updateVectorDisplay(vectorA, vectorB, result, op);
+        }
+
+        function updateVectorDisplay(vecA, vecB, result, op) {
+            const display = document.getElementById('vector-result');
+            
+            let opSymbol = '+';
+            switch(op) {
+                case 'sub': opSymbol = '-'; break;
+                case 'mul': opSymbol = '×'; break;
+                case 'dot': opSymbol = '·'; break;
+            }
+
+            if (op === 'dot') {
+                display.innerHTML = `
+                    A ${opSymbol} B = ${result.x.toFixed(2)}<br>
+                    <span style="color: #94a3b8; font-size: 0.85em;">Dot product measures alignment</span>
+                `;
+            } else {
+                display.innerHTML = `
+                    (${vecA.x.toFixed(1)}, ${vecA.y.toFixed(1)}, ${vecA.z.toFixed(1)}) ${opSymbol}<br>
+                    (${vecB.x.toFixed(1)}, ${vecB.y.toFixed(1)}, ${vecB.z.toFixed(1)}) =<br>
+                    <strong>(${result.x.toFixed(1)}, ${result.y.toFixed(1)}, ${result.z.toFixed(1)})</strong>
+                `;
+            }
+        }
+
+        function setVectorOp(op) {
+            if (scenes.vectors) {
+                scenes.vectors.operation = op;
+                updateVectors();
+
+                // Update button styles
+                document.querySelectorAll('#vectors .btn').forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-secondary');
+                });
+                event.target.classList.remove('btn-secondary');
+                event.target.classList.add('btn-primary');
+            }
+        }
+
+        // Cross Product Demo
+        function initCrossProduct() {
+            const { scene, camera, renderer } = createScene('#cross-canvas');
+            scenes.cross = scene;
+            cameras.cross = camera;
+            renderers.cross = renderer;
+
+            // Create vectors
+            const angle = 45 * Math.PI / 180;
+            const vectorA = new THREE.Vector3(2, 0, 0);
+            const vectorB = new THREE.Vector3(Math.cos(angle) * 2, Math.sin(angle) * 2, 0);
+            const cross = new THREE.Vector3().crossVectors(vectorA, vectorB);
+
+            const createArrow = (vector, color) => {
+                const dir = vector.clone().normalize();
+                const length = vector.length();
+                return new THREE.ArrowHelper(dir, new THREE.Vector3(0, 0, 0), length, color, 0.4, 0.3);
+            };
+
+            const arrowA = createArrow(vectorA, 0x00ff00);
+            const arrowB = createArrow(vectorB, 0xff0000);
+            const arrowCross = createArrow(cross, 0x00ffff);
+
+            scene.add(arrowA);
+            scene.add(arrowB);
+            scene.add(arrowCross);
+
+            // Create plane
+            const planeGeom = new THREE.PlaneGeometry(3, 3);
+            const planeMat = new THREE.MeshBasicMaterial({ 
+                color: 0x4444ff, 
+                transparent: true, 
+                opacity: 0.3,
+                side: THREE.DoubleSide 
+            });
+            const plane = new THREE.Mesh(planeGeom, planeMat);
+            plane.lookAt(cross);
+            scene.add(plane);
+
+            // Store references
+            scenes.cross.arrowA = arrowA;
+            scenes.cross.arrowB = arrowB;
+            scenes.cross.arrowCross = arrowCross;
+            scenes.cross.plane = plane;
+
+            // Setup controls
+            setupCrossControls();
+
+            let time = 0;
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                if (currentDemo === 'cross' && animationStates.cross) {
+                    const autoRotate = document.getElementById('auto-rotate').checked;
+                    
+                    if (autoRotate) {
+                        time += 0.01;
+                        camera.position.x = Math.cos(time) * 6;
+                        camera.position.z = Math.sin(time) * 6;
+                        camera.lookAt(0, 0, 0);
+                    }
+                    
+                    renderer.render(scene, camera);
+                }
+            }
+            animate();
+        }
+
+        function setupCrossControls() {
+            const angleSlider = document.getElementById('cross-angle');
+            const angleVal = document.getElementById('cross-angle-val');
+            const lenASlider = document.getElementById('cross-lenA');
+            const lenAVal = document.getElementById('cross-lenA-val');
+            const lenBSlider = document.getElementById('cross-lenB');
+            const lenBVal = document.getElementById('cross-lenB-val');
+
+            angleSlider.addEventListener('input', (e) => {
+                angleVal.textContent = e.target.value + '°';
+                updateCrossProduct();
+            });
+
+            lenASlider.addEventListener('input', (e) => {
+                lenAVal.textContent = parseFloat(e.target.value).toFixed(1);
+                updateCrossProduct();
+            });
+
+            lenBSlider.addEventListener('input', (e) => {
+                lenBVal.textContent = parseFloat(e.target.value).toFixed(1);
+                updateCrossProduct();
+            });
+
+            document.getElementById('show-plane').addEventListener('change', (e) => {
+                if (scenes.cross && scenes.cross.plane) {
+                    scenes.cross.plane.visible = e.target.checked;
+                }
+            });
+        }
+
+        function updateCrossProduct() {
+            if (!scenes.cross) return;
+
+            const scene = scenes.cross;
+            const angle = parseFloat(document.getElementById('cross-angle').value) * Math.PI / 180;
+            const lenA = parseFloat(document.getElementById('cross-lenA').value);
+            const lenB = parseFloat(document.getElementById('cross-lenB').value);
+
+            const vectorA = new THREE.Vector3(lenA, 0, 0);
+            const vectorB = new THREE.Vector3(Math.cos(angle) * lenB, Math.sin(angle) * lenB, 0);
+            const cross = new THREE.Vector3().crossVectors(vectorA, vectorB);
+
+            // Update arrows
+            scene.remove(scene.arrowA);
+            scene.remove(scene.arrowB);
+            scene.remove(scene.arrowCross);
+
+            const createArrow = (vector, color) => {
+                const dir = vector.clone().normalize();
+                const length = vector.length();
+                return new THREE.ArrowHelper(dir, new THREE.Vector3(0, 0, 0), length, color, 0.4, 0.3);
+            };
+
+            scene.arrowA = createArrow(vectorA, 0x00ff00);
+            scene.arrowB = createArrow(vectorB, 0xff0000);
+            scene.arrowCross = createArrow(cross, 0x00ffff);
+
+            scene.add(scene.arrowA);
+            scene.add(scene.arrowB);
+            scene.add(scene.arrowCross);
+
+            // Update plane
+            if (scene.plane) {
+                scene.plane.lookAt(cross);
+            }
+        }
+
+        // Transform Demo
+        function initTransforms() {
+            const { scene, camera, renderer } = createScene('#transforms-canvas');
+            scenes.transforms = scene;
+            cameras.transforms = camera;
+            renderers.transforms = renderer;
+
+            // Create a colorful cube
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const materials = [
+                new THREE.MeshBasicMaterial({ color: 0xff0000 }),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00 }),
+                new THREE.MeshBasicMaterial({ color: 0x0000ff }),
+                new THREE.MeshBasicMaterial({ color: 0xffff00 }),
+                new THREE.MeshBasicMaterial({ color: 0xff00ff }),
+                new THREE.MeshBasicMaterial({ color: 0x00ffff })
+            ];
+            const cube = new THREE.Mesh(geometry, materials);
+            scene.add(cube);
+
+            // Reference wireframe
+            const wireframe = new THREE.LineSegments(
+                new THREE.EdgesGeometry(geometry),
+                new THREE.LineBasicMaterial({ color: 0x888888 })
+            );
+            scene.add(wireframe);
+
+            scenes.transforms.cube = cube;
+            scenes.transforms.wireframe = wireframe;
+
+            setupTransformControls();
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                if (currentDemo === 'transforms' && animationStates.transforms) {
+                    renderer.render(scene, camera);
+                }
+            }
+            animate();
+        }
+
+        function setupTransformControls() {
+            // Rotation
+            ['x', 'y', 'z'].forEach(axis => {
+                const slider = document.getElementById(`rot-${axis}`);
+                const val = document.getElementById(`rot-${axis}-val`);
+                
+                slider.addEventListener('input', (e) => {
+                    val.textContent = e.target.value + '°';
+                    updateTransform();
+                });
+            });
+
+            // Scale
+            const scaleSlider = document.getElementById('scale');
+            const scaleVal = document.getElementById('scale-val');
+            scaleSlider.addEventListener('input', (e) => {
+                scaleVal.textContent = parseFloat(e.target.value).toFixed(1);
+                updateTransform();
+            });
+
+            // Translation
+            ['x', 'y', 'z'].forEach(axis => {
+                const slider = document.getElementById(`trans-${axis}`);
+                const val = document.getElementById(`trans-${axis}-val`);
+                
+                slider.addEventListener('input', (e) => {
+                    val.textContent = parseFloat(e.target.value).toFixed(1);
+                    updateTransform();
+                });
+            });
+        }
+
+        function updateTransform() {
+            if (!scenes.transforms || !scenes.transforms.cube) return;
+
+            const cube = scenes.transforms.cube;
+
+            // Get rotation values
+            const rotX = parseFloat(document.getElementById('rot-x').value) * Math.PI / 180;
+            const rotY = parseFloat(document.getElementById('rot-y').value) * Math.PI / 180;
+            const rotZ = parseFloat(document.getElementById('rot-z').value) * Math.PI / 180;
+
+            // Get scale
+            const scale = parseFloat(document.getElementById('scale').value);
+
+            // Get translation
+            const transX = parseFloat(document.getElementById('trans-x').value);
+            const transY = parseFloat(document.getElementById('trans-y').value);
+            const transZ = parseFloat(document.getElementById('trans-z').value);
+
+            // Apply transformations
+            cube.rotation.set(rotX, rotY, rotZ);
+            cube.scale.set(scale, scale, scale);
+            cube.position.set(transX, transY, transZ);
+        }
+
+        function resetTransform() {
+            document.getElementById('rot-x').value = 0;
+            document.getElementById('rot-y').value = 0;
+            document.getElementById('rot-z').value = 0;
+            document.getElementById('scale').value = 1;
+            document.getElementById('trans-x').value = 0;
+            document.getElementById('trans-y').value = 0;
+            document.getElementById('trans-z').value = 0;
+
+            document.getElementById('rot-x-val').textContent = '0°';
+            document.getElementById('rot-y-val').textContent = '0°';
+            document.getElementById('rot-z-val').textContent = '0°';
+            document.getElementById('scale-val').textContent = '1.0';
+            document.getElementById('trans-x-val').textContent = '0.0';
+            document.getElementById('trans-y-val').textContent = '0.0';
+            document.getElementById('trans-z-val').textContent = '0.0';
+
+            updateTransform();
+        }
+
+        // Quaternion Demo
+        function initQuaternions() {
+            const { scene, camera, renderer } = createScene('#quaternions-canvas');
+            scenes.quaternions = scene;
+            cameras.quaternions = camera;
+            renderers.quaternions = renderer;
+
+            // Create a ship
+            const geometry = new THREE.ConeGeometry(0.5, 2, 4);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
+            const ship = new THREE.Mesh(geometry, material);
+            ship.rotation.x = Math.PI / 2;
+            scene.add(ship);
+
+            // Direction arrow
+            const arrowGeom = new THREE.ConeGeometry(0.2, 0.5, 8);
+            const arrowMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const arrow = new THREE.Mesh(arrowGeom, arrowMat);
+            arrow.position.z = 1.5;
+            arrow.rotation.x = -Math.PI / 2;
+            ship.add(arrow);
+
+            scenes.quaternions.ship = ship;
+            scenes.quaternions.mode = 'slerp';
+            scenes.quaternions.time = 0;
+
+            const quat1 = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0));
+            const quat2 = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI, Math.PI / 4));
+            
+            scenes.quaternions.quat1 = quat1;
+            scenes.quaternions.quat2 = quat2;
+
+            setupQuaternionControls();
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                if (currentDemo === 'quaternions' && animationStates.quaternions) {
+                    const speed = parseFloat(document.getElementById('quat-speed').value);
+                    scenes.quaternions.time += 0.01 * speed;
+                    const time = scenes.quaternions.time;
+
+                    if (scenes.quaternions.mode === 'slerp') {
+                        const t = (Math.sin(time) + 1) / 2;
+                        ship.quaternion.slerpQuaternions(quat1, quat2, t);
+                    } else {
+                        ship.rotation.x = Math.sin(time) * Math.PI;
+                        ship.rotation.y = Math.cos(time * 0.7) * Math.PI;
+                        ship.rotation.z = Math.sin(time * 0.5) * Math.PI / 4;
+                    }
+
+                    renderer.render(scene, camera);
+                }
+            }
+            animate();
+        }
+
+        function setupQuaternionControls() {
+            const speedSlider = document.getElementById('quat-speed');
+            const speedVal = document.getElementById('quat-speed-val');
+            
+            speedSlider.addEventListener('input', (e) => {
+                speedVal.textContent = parseFloat(e.target.value).toFixed(1) + 'x';
+            });
+        }
+
+        function setQuatMode(mode) {
+            if (scenes.quaternions) {
+                scenes.quaternions.mode = mode;
+
+                // Update button styles
+                document.querySelectorAll('#quaternions .control-group .btn').forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-secondary');
+                });
+                event.target.classList.remove('btn-secondary');
+                event.target.classList.add('btn-primary');
+            }
+        }
+
+        // Projection Demo
+        function initProjection() {
+            const container = document.querySelector('#projection-canvas');
+            const width = container.clientWidth;
+            const height = 600;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+            
+            camera.position.set(8, 8, 8);
+            camera.lookAt(0, 0, 0);
+
+            scenes.projection = scene;
+            cameras.projection = camera;
+            renderers.projection = renderer;
+
+            const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+            scene.add(gridHelper);
+
+            // Create cubes at different distances
+            const cubes = [];
+            const cubeSize = 1;
+            const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+            
+            for (let i = 0; i < 5; i++) {
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: new THREE.Color().setHSL(i / 5, 1, 0.5)
+                });
+                const cube = new THREE.Mesh(geometry, material);
+                cube.position.set(0, 0.5, -i * 3);
+                scene.add(cube);
+                cubes.push(cube);
+
+                const wireframe = new THREE.LineSegments(
+                    new THREE.EdgesGeometry(geometry),
+                    new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
+                );
+                wireframe.position.copy(cube.position);
+                scene.add(wireframe);
+            }
+
+            scenes.projection.cubes = cubes;
+            scenes.projection.projectionType = 'perspective';
+
+            setupProjectionControls();
+
+            let time = 0;
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                if (currentDemo === 'projection' && animationStates.projection) {
+                    time += 0.01;
+
+                    camera.position.x = Math.cos(time * 0.5) * 10;
+                    camera.position.z = Math.sin(time * 0.5) * 10;
+                    camera.lookAt(0, 0, 0);
+
+                    renderer.render(scene, camera);
+                }
+            }
+            animate();
+        }
+
+        function setupProjectionControls() {
+            const fovSlider = document.getElementById('fov');
+            const fovVal = document.getElementById('fov-val');
+            
+            fovSlider.addEventListener('input', (e) => {
+                fovVal.textContent = e.target.value + '°';
+                updateProjection();
+            });
+
+            const nearSlider = document.getElementById('near');
+            const nearVal = document.getElementById('near-val');
+            
+            nearSlider.addEventListener('input', (e) => {
+                nearVal.textContent = parseFloat(e.target.value).toFixed(1);
+                updateProjection();
+            });
+
+            const zoomSlider = document.getElementById('ortho-zoom');
+            const zoomVal = document.getElementById('ortho-zoom-val');
+            
+            zoomSlider.addEventListener('input', (e) => {
+                zoomVal.textContent = e.target.value;
+                updateProjection();
+            });
+        }
+
+        function setProjection(type) {
+            if (!scenes.projection) return;
+
+            scenes.projection.projectionType = type;
+
+            // Show/hide controls
+            if (type === 'perspective') {
+                document.getElementById('perspective-controls').style.display = 'block';
+                document.getElementById('ortho-controls').style.display = 'none';
+            } else {
+                document.getElementById('perspective-controls').style.display = 'none';
+                document.getElementById('ortho-controls').style.display = 'block';
+            }
+
+            updateProjection();
+
+            // Update button styles
+            document.querySelectorAll('#projection .control-group .btn').forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+            event.target.classList.remove('btn-secondary');
+            event.target.classList.add('btn-primary');
+        }
+
+        function updateProjection() {
+            if (!cameras.projection || !renderers.projection) return;
+
+            const container = document.querySelector('#projection-canvas');
+            const width = container.clientWidth;
+            const height = 600;
+            const aspect = width / height;
+
+            const camera = cameras.projection;
+            const renderer = renderers.projection;
+            const type = scenes.projection.projectionType;
+
+            if (type === 'perspective') {
+                const fov = parseFloat(document.getElementById('fov').value);
+                const near = parseFloat(document.getElementById('near').value);
+                
+                const newCamera = new THREE.PerspectiveCamera(fov, aspect, near, 1000);
+                newCamera.position.copy(camera.position);
+                newCamera.lookAt(0, 0, 0);
+                
+                cameras.projection = newCamera;
+            } else {
+                const zoom = parseFloat(document.getElementById('ortho-zoom').value);
+                
+                const newCamera = new THREE.OrthographicCamera(
+                    -zoom, zoom, 
+                    zoom * height / width, -zoom * height / width, 
+                    0.1, 1000
+                );
+                newCamera.position.copy(camera.position);
+                newCamera.lookAt(0, 0, 0);
+                
+                cameras.projection = newCamera;
+            }
+        }
+
+        function toggleAnimation(demo) {
+            animationStates[demo] = !animationStates[demo];
+        }
+
+        // Initialize first demo on load
+        window.addEventListener('load', () => {
+            initDemo('vectors');
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            Object.keys(renderers).forEach(key => {
+                const container = renderers[key].domElement.parentElement;
+                const width = container.clientWidth;
+                const height = 600;
+                
+                renderers[key].setSize(width, height);
+                
+                if (cameras[key].isPerspectiveCamera) {
+                    cameras[key].aspect = width / height;
+                    cameras[key].updateProjectionMatrix();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
